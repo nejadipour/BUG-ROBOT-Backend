@@ -3,6 +3,6 @@ from .views import BoardViewSet
 
 
 router = DefaultRouter()
-router.register(r'board', BoardViewSet, basename='board' )
+router.register(r'board', BoardViewSet, basename='board')
 
 urlpatterns = router.urls
