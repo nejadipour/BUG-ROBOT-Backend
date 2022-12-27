@@ -32,3 +32,21 @@ class SquareViewSet(ModelViewSet):
             data[f"[{position_x},{position_y}]"] = dict(square)
 
         return Response(data=data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['POST'])
+    def move(self, request, pk, *args, **kwargs):
+        square = Square.objects.filter(id=pk).last()
+        destination_id = request.data["destination"]
+
+        destination = Square.objects.filter(id=destination_id).last()
+        destination.square_type = square.square_type
+        destination.is_occupied = True
+        destination.save()
+        
+        square.square_type = "EMT"
+        square.is_occupied = False
+        square.save()
+        
+        serializer = SquareSerializer([destination, square], many=True)
+
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
