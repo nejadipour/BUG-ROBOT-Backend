@@ -1,3 +1,8 @@
-from django.shortcuts import render
+from rest_framework.viewsets import ModelViewSet
+from .serializers import SquareSerializer
+from .models import Square
 
-# Create your views here.
+
+class SquareViewSet(ModelViewSet):
+    serializer_class = SquareSerializer
+    queryset = Square.objects.all()
