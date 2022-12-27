@@ -12,12 +12,13 @@ class BoardViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data
-        board = Board.objects.create(name=data["name"], row=data["row"], column=data["column"], robot_strength=data["robot_strength"])
-        
+        board = Board.objects.create(
+            name=data["name"], row=data["row"], column=data["column"], robot_strength=data["robot_strength"])
+
         for position_x in range(int(board.column)):
             for position_y in range(int(board.row)):
-                Square.objects.create(board=board, position_x=position_x, position_y=position_y)
-                
+                Square.objects.create(
+                    board=board, position_x=position_x, position_y=position_y)
 
         serializer = self.get_serializer(board)
         headers = self.get_success_headers(serializer.data)
