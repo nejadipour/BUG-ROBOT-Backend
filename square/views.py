@@ -34,6 +34,18 @@ class SquareViewSet(ModelViewSet):
         return Response(data=data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['POST'])
+    def add_card(self, request, pk, *args, **kwargs):
+        square = Square.objects.filter(id=pk).last()
+        square_type = request.data["square_type"]
+
+        square.square_type = square_type
+        square.is_occupied = True
+        square.save()
+
+        serializer = SquareSerializer([square], many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['POST'])
     def move(self, request, pk, *args, **kwargs):
         square = Square.objects.filter(id=pk).last()
         destination_id = request.data["destination"]
