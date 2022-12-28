@@ -1,5 +1,6 @@
 # BUG-ROBOT-Backend
-The back-end implementation of simple game using django
+The back-end implementation of simple game using Django and django-rest-framework.
+You Can see the front-end part [here](https://github.com/nejadipour/BUG-ROBOT-Frontend).
 
 ## Run Locally
 Clone the project
