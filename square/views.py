@@ -4,6 +4,7 @@ from .models import Square
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Q
 
 
 class SquareViewSet(ModelViewSet):
@@ -54,11 +55,29 @@ class SquareViewSet(ModelViewSet):
         destination.square_type = square.square_type
         destination.is_occupied = True
         destination.save()
-        
+
         square.square_type = "EMT"
         square.is_occupied = False
         square.save()
-        
+
         serializer = SquareSerializer([destination, square], many=True)
 
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['POST'])
+    def attack(self, request, pk, *args, **kwargs):
+        square = Square.objects.filter(id=pk).last()
+        robot_strong = square.board.robot_strength
+
+        right = square.position_x + robot_strong
+        left = square.position_x - robot_strong
+        top = square.position_y + robot_strong
+        bottom = square.position_y - robot_strong
+
+        neighbors = Square.objects.filter(~Q(id=square.id), board=square.board, position_x__gte=left,
+                                          position_x__lte=right, position_y__gte=bottom, position_y__lte=top)
+
+        neighbors.update(is_occupied=False, square_type="EMT")
+
+        serializer = SquareSerializer(neighbors, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
