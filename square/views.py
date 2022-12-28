@@ -98,6 +98,11 @@ class SquareViewSet(ModelViewSet):
         square = Square.objects.filter(id=pk).last()
         robot_strong = square.board.robot_strength
 
+        if square.square_type != "BOT":
+            return Response(
+                data={"message": "This card doesn't attack others"},
+                status=status.HTTP_400_BAD_REQUEST)
+
         right = square.position_x + robot_strong
         left = square.position_x - robot_strong
         top = square.position_y + robot_strong
