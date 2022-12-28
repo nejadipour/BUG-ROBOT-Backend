@@ -37,21 +37,50 @@ class SquareViewSet(ModelViewSet):
     @action(detail=True, methods=['POST'])
     def add_card(self, request, pk, *args, **kwargs):
         square = Square.objects.filter(id=pk).last()
-        square_type = request.data["square_type"]
+        if square.is_occupied:
+            return Response(
+                data={"message": "This position is occupied"},
+                status=status.HTTP_400_BAD_REQUEST)
+        else:
+            square_type = request.data["square_type"]
 
-        square.square_type = square_type
-        square.is_occupied = True
-        square.save()
+            square.square_type = square_type
+            square.is_occupied = True
+            square.save()
 
-        serializer = SquareSerializer([square], many=True)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+            serializer = SquareSerializer([square], many=True)
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['POST'])
     def move(self, request, pk, *args, **kwargs):
         square = Square.objects.filter(id=pk).last()
         destination_id = request.data["destination"]
 
+        if square.square_type != "BOT":
+            return Response(
+                data={"message": "You can't move this card"},
+                status=status.HTTP_400_BAD_REQUEST)
+
         destination = Square.objects.filter(id=destination_id).last()
+        if destination.is_occupied:
+            return Response(
+                data={"message": "The position is occupied"},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        if destination.position_x == square.position_x:
+            distance = abs(destination.position_y - square.position_y)
+        elif destination.position_y == square.position_y:
+            distance = abs(destination.position_x - square.position_x)
+        else:
+            return Response(
+                data={"message": "You can move only in right-left or bottom-top direction"},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        if distance > square.board.robot_strength:
+            return Response(
+                data={"message": "This position is too far."},
+                status=status.HTTP_400_BAD_REQUEST)
+
         destination.square_type = square.square_type
         destination.is_occupied = True
         destination.save()
@@ -68,6 +97,11 @@ class SquareViewSet(ModelViewSet):
     def attack(self, request, pk, *args, **kwargs):
         square = Square.objects.filter(id=pk).last()
         robot_strong = square.board.robot_strength
+
+        if square.square_type != "BOT":
+            return Response(
+                data={"message": "This card doesn't attack others"},
+                status=status.HTTP_400_BAD_REQUEST)
 
         right = square.position_x + robot_strong
         left = square.position_x - robot_strong
