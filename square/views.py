@@ -5,6 +5,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
+from drf_yasg.utils import swagger_auto_schema
+from .parameters import square_type_param
 
 
 class SquareViewSet(ModelViewSet):
@@ -34,15 +36,26 @@ class SquareViewSet(ModelViewSet):
 
         return Response(data=data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        manual_parameters=[square_type_param],
+        operation_description="By passing the id and type, you can add a card to any square",
+        responses={
+            "404": "square id not available",
+            "200": "card added to the square",
+            "400": "occupied position"})
     @action(detail=True, methods=['POST'])
     def add_card(self, request, pk, *args, **kwargs):
         square = Square.objects.filter(id=pk).last()
+        if square is None:
+            return Response(
+                data={"message": "Square not available"},
+                status=status.HTTP_404_NOT_FOUND)
         if square.is_occupied:
             return Response(
                 data={"message": "This position is occupied"},
                 status=status.HTTP_400_BAD_REQUEST)
         else:
-            square_type = request.data["square_type"]
+            square_type = self.request.query_params.get('square_type')
 
             square.square_type = square_type
             square.is_occupied = True
@@ -73,7 +86,8 @@ class SquareViewSet(ModelViewSet):
             distance = abs(destination.position_x - square.position_x)
         else:
             return Response(
-                data={"message": "You can move only in right-left or bottom-top direction"},
+                data={
+                    "message": "You can move only in right-left or bottom-top direction"},
                 status=status.HTTP_400_BAD_REQUEST)
 
         if distance > square.board.robot_strength:
