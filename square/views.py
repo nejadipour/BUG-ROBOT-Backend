@@ -1,4 +1,4 @@
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet
 from .serializers import SquareSerializer
 from .models import Square
 from rest_framework.decorators import action
@@ -6,20 +6,18 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
-from .parameters import square_type_param, destination_param
+from .parameters import square_type_param, destination_param, board_param
 
 
-class SquareViewSet(ModelViewSet):
+class SquareViewSet(ReadOnlyModelViewSet):
     serializer_class = SquareSerializer
+    queryset = Square.objects.all()
 
-    def get_queryset(self):
-        board = self.request.query_params.get('board')
-
-        if not board:
-            return Square.objects.all()
-        else:
-            return Square.objects.filter(board=board)
-
+    @swagger_auto_schema(
+        manual_parameters=[board_param],
+        operation_description="The squares of the passed board id will be reurned with postions as key",
+        responses={
+            "200": "squares of the board returned successfully"})
     @action(detail=False, methods=['GET'])
     def get_board_squares(self, request, *args, **kwargs):
         board = self.request.query_params.get('board')

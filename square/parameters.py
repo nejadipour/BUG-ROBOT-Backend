@@ -11,3 +11,9 @@ destination_param = openapi.Parameter('destination',
                                       description='The destination of your move',
                                       type=openapi.TYPE_INTEGER,
                                       required=True)
+
+board_param = openapi.Parameter('board',
+                                      openapi.IN_QUERY,
+                                      description='The board you want to get its squares',
+                                      type=openapi.TYPE_INTEGER,
+                                      required=True)
