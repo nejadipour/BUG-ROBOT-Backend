@@ -124,9 +124,19 @@ class SquareViewSet(ModelViewSet):
 
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        operation_description="The neighbors around the passed id will be destroyed",
+        responses={
+            "404": "square is not available",
+            "200": "all the neighbors destroyed",
+            "400": "selected square type is not BOT"})
     @action(detail=True, methods=['POST'])
     def attack(self, request, pk, *args, **kwargs):
         square = Square.objects.filter(id=pk).last()
+        if square is None:
+            return Response(
+                data={"message": "Square not available"},
+                status=status.HTTP_404_NOT_FOUND)
         robot_strong = square.board.robot_strength
 
         if square.square_type != "BOT":
@@ -139,7 +149,7 @@ class SquareViewSet(ModelViewSet):
         top = square.position_y + robot_strong
         bottom = square.position_y - robot_strong
 
-        neighbors = Square.objects.filter(~Q(id=square.id), board=square.board, position_x__gte=left,
+        neighbors = Square.objects.filter(~Q(id=square.id), ~Q(square_type="BOT"), board=square.board, position_x__gte=left,
                                           position_x__lte=right, position_y__gte=bottom, position_y__lte=top)
 
         neighbors.update(is_occupied=False, square_type="EMT")
