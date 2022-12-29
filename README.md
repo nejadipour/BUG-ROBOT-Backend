@@ -17,12 +17,12 @@ pip install -r requirements.txt
 ```
 Make migrations and migrate to the database. (default is a sqlite3 database)
 ```
-python3 ./manage.py makemigrations
-python3 ./manage.py migrate
+python3 manage.py makemigrations
+python3 manage.py migrate
 ```
 To run locally
 ```
-python3 ./manage.py runserver
+python3 manage.py runserver
 ```
 This will run the server on port 8000.
 
@@ -34,4 +34,7 @@ The ```robot_strength``` field is a number that is used for handling actions of 
 State of each position and also handling the user's actions are handled using this model.
 
 ## API Documentation
-This part will be added to explain each of the endpoints and parameters
+After running the server, you can see the API documentation here: ```localhost:8000/swagger```
+
+![image](https://user-images.githubusercontent.com/78561069/209984614-97101055-ab3a-4180-ab8b-361b1bd111aa.png)
+
