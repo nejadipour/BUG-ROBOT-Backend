@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from board.models import Board
 from rest_framework import status
+from .models import Square
 
 
 class TestUrls(TestCase):
@@ -17,8 +18,20 @@ class TestUrls(TestCase):
     def test_get_board_squares(self):
         url = reverse('square-get-board-squares')
         response = self.client.get(url+f"?board={self.board.id}")
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response = self.client.get(url+f"?board={-1}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_add_card(self):
+        url = reverse('square-add-card', kwargs={"pk": -1})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        square = Square.objects.filter(board=self.board).first()
+        url = reverse('square-add-card', kwargs={"pk": square.id})
+        response = self.client.post(url+"?square_type=BOT/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.post(url+"?square_type=BOT/")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
