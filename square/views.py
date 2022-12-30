@@ -7,6 +7,8 @@ from rest_framework import status
 from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from .parameters import square_type_param, destination_param, board_param
+from django.shortcuts import get_object_or_404
+from board.models import Board
 
 
 class SquareViewSet(ReadOnlyModelViewSet):
@@ -17,10 +19,12 @@ class SquareViewSet(ReadOnlyModelViewSet):
         manual_parameters=[board_param],
         operation_description="The squares of the passed board id will be reurned with postions as key",
         responses={
-            "200": "squares of the board returned successfully"})
+            "200": "squares of the board returned successfully",
+            "404": "board is not available"})
     @action(detail=False, methods=['GET'])
     def get_board_squares(self, request, *args, **kwargs):
-        board = self.request.query_params.get('board')
+        board_id = self.request.query_params.get('board')
+        board = get_object_or_404(Board, pk=board_id)
 
         squares = Square.objects.filter(board=board)
         data = {}
@@ -43,11 +47,7 @@ class SquareViewSet(ReadOnlyModelViewSet):
             "400": "occupied position"})
     @action(detail=True, methods=['POST'])
     def add_card(self, request, pk, *args, **kwargs):
-        square = Square.objects.filter(id=pk).last()
-        if square is None:
-            return Response(
-                data={"message": "Square not available"},
-                status=status.HTTP_404_NOT_FOUND)
+        square = get_object_or_404(Square, pk=pk)
         if square.is_occupied:
             return Response(
                 data={"message": "This position is occupied"},
@@ -130,11 +130,7 @@ class SquareViewSet(ReadOnlyModelViewSet):
             "400": "selected square type is not BOT"})
     @action(detail=True, methods=['POST'])
     def attack(self, request, pk, *args, **kwargs):
-        square = Square.objects.filter(id=pk).last()
-        if square is None:
-            return Response(
-                data={"message": "Square not available"},
-                status=status.HTTP_404_NOT_FOUND)
+        square = get_object_or_404(Square, pk=pk)
         robot_strong = square.board.robot_strength
 
         if square.square_type != "BOT":
