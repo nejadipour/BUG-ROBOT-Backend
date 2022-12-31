@@ -38,3 +38,8 @@ After running the server, you can see the API documentation here: ```localhost:8
 
 ![image](https://user-images.githubusercontent.com/78561069/209984614-97101055-ab3a-4180-ab8b-361b1bd111aa.png)
 
+## Test
+You can test the endpoints that are working correctly by running this command:
+```
+python3 manage.py test
+```
