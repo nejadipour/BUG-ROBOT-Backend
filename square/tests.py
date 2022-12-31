@@ -5,7 +5,7 @@ from rest_framework import status
 from .models import Square
 
 
-class TestUrls(TestCase):
+class TestEndpoints(TestCase):
     def setUp(self) -> None:
         self.client = Client()
         self.board = Board.objects.create(
