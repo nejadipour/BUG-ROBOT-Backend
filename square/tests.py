@@ -65,7 +65,6 @@ class TestUrls(TestCase):
 
         # trying to a far position
         response = self.client.post(url+f"?destination={destination.id}")
-        print(destination)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         destination = Square.objects.filter(
@@ -81,4 +80,23 @@ class TestUrls(TestCase):
         destination.is_occupied = False
         destination.save()
         response = self.client.post(url+f"?destination={destination.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_attack(self):
+        url = reverse('square-attack', kwargs={"pk": -1})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        square = Square.objects.filter(board=self.board).first()
+        square.is_occupied = True
+        square.square_type = "BUG"
+        square.save()
+        url = reverse('square-attack', kwargs={"pk": square.id})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        square.square_type = "BOT"
+        square.save()
+        url = reverse('square-attack', kwargs={"pk": square.id})
+        response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
