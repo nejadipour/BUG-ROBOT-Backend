@@ -13,18 +13,7 @@ class BoardViewSet(ModelViewSet):
 
     @swagger_auto_schema(operation_description="By creating the board, its squares will be created too")
     def create(self, request, *args, **kwargs):
-        data = request.data
-        board = Board.objects.create(
-            name=data["name"], row=data["row"], column=data["column"], robot_strength=data["robot_strength"])
-
-        for position_x in range(int(board.column)):
-            for position_y in range(int(board.row)):
-                Square.objects.create(
-                    board=board, position_x=position_x, position_y=position_y)
-
-        serializer = self.get_serializer(board)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return super().create(request, *args, **kwargs)
 
     @swagger_auto_schema(operation_description="By deleting the board, its squares will be deleted too")
     def destroy(self, request, *args, **kwargs):
